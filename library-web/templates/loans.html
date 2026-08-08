@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Ödünç Kayıtları{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <h1>Ödünç Kayıtları</h1>
+  <p class="subtitle">{{ active|length }} aktif ödünç</p>
+</div>
+
+<table class="loans-table">
+  <thead>
+    <tr><th>Kitap</th><th>Öğrenci</th><th>Alış Tarihi</th><th>Son Tarih</th><th>Durum</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for l in active %}
+    <tr class="{{ 'overdue-row' if l['days_overdue'] > 0 }}">
+      <td><b>{{ l['Title'] }}</b></td>
+      <td>{{ l['StudentName'] }}</td>
+      <td>{{ l['Borrow_Date'] }}</td>
+      <td>{{ l['Due_Date'] }}</td>
+      <td>
+        {% if l['days_overdue'] > 0 %}
+          <span class="badge badge-overdue">{{ l['days_overdue']|round(0, 'floor')|int }} gün gecikti</span>
+        {% else %}
+          <span class="badge badge-ok">Zamanında</span>
+        {% endif %}
+      </td>
+      <td>
+        <form method="post" action="{{ url_for('return_book', borrow_id=l['Borrow_ID']) }}">
+          <button type="submit" class="btn btn-text">İade Et</button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6" class="empty-hint">Şu anda ödünç verilen kitap yok.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% if history %}
+<div class="divider"></div>
+<h2>Son İadeler</h2>
+<table class="loans-table">
+  <thead><tr><th>Kitap</th><th>Öğrenci</th><th>İade Tarihi</th></tr></thead>
+  <tbody>
+    {% for h in history %}
+    <tr><td>{{ h['Title'] }}</td><td>{{ h['StudentName'] }}</td><td>{{ h['Return_Date'] }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}{{ book['Title'] }}{% endblock %}
+{% block content %}
+
+<a href="{{ url_for('catalog') }}" class="back-link">← Kataloğa dön</a>
+
+<div class="detail-layout">
+  <div class="detail-main">
+    <span class="book-genre">{{ book['Genre'] }}</span>
+    <h1>{{ book['Title'] }}</h1>
+    <p class="book-author-lg">{{ book['Author'] }}{% if metadata.get('year') %} · {{ metadata['year'] }}{% endif %}</p>
+
+    {% if metadata.get('summary') %}
+      <p class="summary">{{ metadata['summary'] }}</p>
+    {% endif %}
+
+    <div class="meta-grid">
+      {% if metadata.get('publisher') %}<div><span>Yayınevi</span>{{ metadata['publisher'] }}</div>{% endif %}
+      {% if metadata.get('pages') %}<div><span>Sayfa</span>{{ metadata['pages'] }}</div>{% endif %}
+      {% if metadata.get('language') %}<div><span>Dil</span>{{ metadata['language'] }}</div>{% endif %}
+      {% if metadata.get('edition') %}<div><span>Baskı</span>{{ metadata['edition'] }}</div>{% endif %}
+      <div><span>ISBN</span>{{ book['ISBN'] }}</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h2>Yorumlar {% if avg_rating %}<span class="avg-rating">★ {{ avg_rating }}</span>{% endif %}</h2>
+    <div class="review-list">
+      {% for r in reviews %}
+      <div class="review">
+        <div class="review-top">
+          <b>{{ r['StudentName'] }}</b>
+          <span class="stars">{{ '★' * r['Rating'] }}{{ '☆' * (5 - r['Rating']) }}</span>
+        </div>
+        <p>{{ r['Comment'] }}</p>
+      </div>
+      {% else %}
+      <p class="empty-hint">Henüz yorum yok — ilk yorumu sen yaz.</p>
+      {% endfor %}
+    </div>
+
+    <form class="review-form" method="post" action="{{ url_for('add_review', book_id=book['Book_ID']) }}">
+      <h3>Yorum Ekle</h3>
+      <div class="field-row">
+        <select name="student_id" required>
+          <option value="" disabled selected>Öğrenci seç</option>
+          {% for s in students %}<option value="{{ s['Student_ID'] }}">{{ s['Name'] }}</option>{% endfor %}
+        </select>
+        <select name="rating" required>
+          <option value="" disabled selected>Puan</option>
+          {% for i in range(5, 0, -1) %}<option value="{{ i }}">{{ '★' * i }}</option>{% endfor %}
+        </select>
+      </div>
+      <textarea name="comment" placeholder="Bu kitap hakkında ne düşünüyorsun?" required></textarea>
+      <button type="submit" class="btn btn-secondary">Yorumu Gönder</button>
+    </form>
+  </div>
+
+  <aside class="detail-side">
+    <div class="borrow-card">
+      <div class="avail-badge {{ 'out' if book['Copies_Available'] == 0 }}">
+        {% if book['Copies_Available'] > 0 %}{{ book['Copies_Available'] }} kopya uygun{% else %}Stokta yok{% endif %}
+      </div>
+      {% if book['Copies_Available'] > 0 %}
+      <form method="post" action="{{ url_for('borrow', book_id=book['Book_ID']) }}">
+        <label for="student_id">Öğrenci</label>
+        <select name="student_id" id="student_id" required>
+          <option value="" disabled selected>Seç...</option>
+          {% for s in students %}<option value="{{ s['Student_ID'] }}">{{ s['Name'] }}</option>{% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary full">Ödünç Al</button>
+        <p class="fine-print">14 gün süreyle ödünç verilir.</p>
+      </form>
+      {% else %}
+      <p class="fine-print">Bu kitabın şu anda uygun kopyası bulunmuyor.</p>
+      {% endif %}
+    </div>
+  </aside>
+</div>
+
+{% endblock %}

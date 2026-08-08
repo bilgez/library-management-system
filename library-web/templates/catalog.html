@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Katalog{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <h1>Kitap Kataloğu</h1>
+  <p class="subtitle">{{ books|length }} kitap listeleniyor</p>
+</div>
+
+<form class="search-bar" method="get" action="{{ url_for('catalog') }}">
+  <input type="text" name="q" value="{{ q }}" placeholder="Başlık veya yazar ara...">
+  <button type="submit">Ara</button>
+</form>
+
+<div class="genre-filters">
+  <a href="{{ url_for('catalog') }}" class="genre-pill {{ 'active' if not active_genre }}">Tümü</a>
+  {% for g in genres %}
+    <a href="{{ url_for('catalog', genre=g) }}" class="genre-pill {{ 'active' if active_genre == g }}">{{ g }}</a>
+  {% endfor %}
+</div>
+
+<div class="book-grid">
+  {% for book in books %}
+  <a href="{{ url_for('book_detail', book_id=book['Book_ID']) }}" class="book-card">
+    <div class="book-spine"></div>
+    <div class="book-card-body">
+      <span class="book-genre">{{ book['Genre'] }}</span>
+      <h3>{{ book['Title'] }}</h3>
+      <p class="book-author">{{ book['Author'] }}</p>
+      <div class="book-avail {{ 'out' if book['Copies_Available'] == 0 }}">
+        {% if book['Copies_Available'] > 0 %}
+          {{ book['Copies_Available'] }} kopya uygun
+        {% else %}
+          Stokta yok
+        {% endif %}
+      </div>
+    </div>
+  </a>
+  {% else %}
+  <p class="empty-hint">Aramanla eşleşen kitap bulunamadı.</p>
+  {% endfor %}
+</div>
+
+{% endblock %}
